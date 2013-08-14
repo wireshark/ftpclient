@@ -4,16 +4,16 @@ use \Exception;
 
 /**
  * FTP Client for PHP
- * 
+ *
  * @package FTPClient
  * @version 1.0
- * 
+ *
  * @copyright Melih Ucar
  * @author Melih Ucar
  * @license http://opensource.org/licenses/MIT (The MIT License)
- * 
+ *
  * Copyright (c) 2013, Melih Ucar (http://www.melihucar.net/)
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
@@ -54,24 +54,24 @@ class FtpClient
 
     /**
      * Constructor
-     * 
+     *
      * Checks if ftp extension is loaded.
      */
     public function __construct()
     {
         if ( !extension_loaded('ftp') ) {
-            throw new Exception('FTP extension is not loaded!');            
+            throw new Exception('FTP extension is not loaded!');
         }
     }
 
     /**
      * Opens a FTP connection
-     * 
+     *
      * @param string $host
      * @param bool $ssl
      * @param int $port
      * @param int $timeout
-     * 
+     *
      * @return FTPClient
      */
     public function connect($host, $ssl = false, $port = 21, $timeout = 90)
@@ -83,7 +83,7 @@ class FtpClient
         }
 
         if ($this->connection == null) {
-            throw new Exception('Unable to connect');            
+            throw new Exception('Unable to connect');
         } else {
             return $this;
         }
@@ -91,10 +91,10 @@ class FtpClient
 
     /**
      * Logins to FTP Server
-     * 
+     *
      * @param string $username
      * @param string $password
-     * 
+     *
      * @return FTPClient
      */
     public function login($username = 'anonymous', $password = '')
@@ -104,13 +104,18 @@ class FtpClient
         if ($result === false) {
             throw new Exception('Login incorrect');
         } else {
+            // set passive mode
+            if (!is_null($this->passive)) {
+                $this->passive($this->passive);
+            }
+
             return $this;
         }
     }
 
     /**
      * Closes FTP connection
-     * 
+     *
      * @return void
      */
     public function close()
@@ -124,9 +129,9 @@ class FtpClient
 
     /**
      * Changes passive mode,,,
-     * 
+     *
      * @param bool $passive
-     * 
+     *
      * @return FTPClient,
      */
     public function passive($passive = true)
@@ -145,13 +150,13 @@ class FtpClient
 
     /**
      * Changes the current directory to the specified one
-     * 
+     *
      * @return FTPClient
      */
     public function changeDirectory($directory)
     {
         $result = @ftp_chdir($this->connection, $directory);
-        
+
         if ($result === false) {
             throw new Exception('Unable to change directory');
         }
@@ -161,13 +166,13 @@ class FtpClient
 
     /**
      * Changes to the parent directory
-     * 
+     *
      * @return FTPClient
      */
     public function parentDirectory()
     {
         $result = @ftp_cdup($this->connection);
-        
+
         if ($result === false) {
             throw new Exception('Unable to get parent folder');
         }
@@ -183,7 +188,7 @@ class FtpClient
     public function getDirectory()
     {
         $result = @ftp_pwd($this->connection);
-        
+
         if ($result === false) {
             throw new Exception('Unable to get directory name');
         }
@@ -201,7 +206,7 @@ class FtpClient
     public function createDirectory($directory)
     {
         $result = @ftp_mkdir($this->connection, $directory);
-        
+
         if ($result === false) {
             throw new Exception('Unable to create directory');
         }
@@ -213,13 +218,13 @@ class FtpClient
      * Removes a directory
      *
      * @param string $directory
-     * 
+     *
      * @return FTPClient
      */
     public function removeDirectory($directory)
     {
         $result = @ftp_rmdir($this->connection, $directory);
-        
+
         if ($result === false) {
             throw new Exception('Unable to remove directory');
         }
@@ -238,7 +243,7 @@ class FtpClient
     {
         $result = @ftp_nlist($this->connection, $directory);
         asort($result);
-        
+
         if ($result === false) {
             throw new Exception('Unable to list directory');
         }
@@ -250,13 +255,13 @@ class FtpClient
      * Deletes a file on the FTP server
      *
      * @param string $path
-     * 
+     *
      * @return FTPClient
      */
     public function delete($path)
     {
         $result = @ftp_delete($this->connection, $path);
-        
+
         if ($result === false) {
             throw new Exception('Unable to get parent folder');
         }
@@ -271,7 +276,7 @@ class FtpClient
      * @param string $remoteFile
      *
      * @return int
-     * 
+     *
      */
     public function size($remoteFile)
     {
@@ -291,7 +296,7 @@ class FtpClient
      * @param string $remoteFile
      *
      * @return int
-     * 
+     *
      */
     public function modifiedTime($remoteFile, $format = null)
     {
@@ -326,7 +331,7 @@ class FtpClient
      * @param string $remoteFile
      * @param int $mode
      * @param int $resumepos
-     * 
+     *
      * @return FTPClient
      */
     public function get($localFile, $remoteFile, $mode = FTPClient::ASCII, $resumePosision = 0)
@@ -347,13 +352,13 @@ class FtpClient
      * @param string $localFile
      * @param int $mode
      * @param int $startPosision
-     * 
+     *
      * @return FTPClient
      */
     public function put($remoteFile, $localFile, $mode = FTPClient::ASCII, $startPosision = 0)
     {
         $result = @ftp_put($this->connection, $remoteFile, $localFile, $mode, $startPosision);
-        
+
         if ($result === false) {
             throw new Exception('Unable to put file');
         }
@@ -368,13 +373,13 @@ class FtpClient
      * @param string $remoteFile
      * @param int $mode
      * @param int $resumepos
-     * 
+     *
      * @return FTPClient
      */
     public function fget(resource $handle, $remoteFile, $mode = FTPClient::ASCII, $resumePosision = 0)
     {
         $result = @ftp_fget($this->connection, $handle, $remoteFile, $mode, $resumePosision);
-        
+
         if ($result === false) {
             throw new Exception('Unable to get file');
         }
@@ -389,13 +394,13 @@ class FtpClient
      * @param resource $handle
      * @param int $mode
      * @param int $startPosision
-     * 
+     *
      * @return FTPClient
      */
     public function fput($remoteFile, resource $handle, $mode = FTPClient::ASCII, $startPosision = 0)
     {
         $result = @ftp_fput($this->connection, $remoteFile, $handle, $mode, $startPosision);
-        
+
         if ($result === false) {
             throw new Exception('Unable to put file');
         }
@@ -420,7 +425,7 @@ class FtpClient
 
                 return $result;
                 break;
-            
+
             default:
                 throw new Exception('Unsupported option');
                 break;
@@ -450,26 +455,26 @@ class FtpClient
                     throw new Exception('Autoseek value must be boolean');
                 }
                 break;
-            
+
             default:
                 throw new Exception('Unsupported option');
                 break;
         }
 
-        return @ftp_set_option($this->connection, $option, $val);
+        return @ftp_set_option($this->connection, $option, $value);
     }
 
     /**
      * Allocates space for a file to be uploaded
-     * 
+     *
      * @param int $filesize
-     * 
+     *
      * @return FTPClient
      */
     public function allocate($filesize)
     {
-        $result = @ftp_alloc($this->connection, $size);
-        
+        $result = @ftp_alloc($this->connection, $filesize);
+
         if ($result === false) {
             throw new Exception('Unable to allocate');
         }
@@ -482,13 +487,13 @@ class FtpClient
      *
      * @param int $mode
      * @param string $filename
-     * 
+     *
      * @return FTPClient
      */
     public function chmod($mode, $filename)
     {
         $result = @ftp_chmod($this->connection, $mode, $filename);
-        
+
         if ($result === false) {
             throw new Exception('Unable to change permissions');
         }
@@ -500,13 +505,13 @@ class FtpClient
      * Requests execution of a command on the FTP server
      *
      * @param string $command
-     * 
+     *
      * @return FTPClient
      */
     public function exec($command)
     {
         $result = @ftp_exec($this->connection, $command);
-        
+
         if ($result === false) {
             throw new Exception('Unable to exec command');
         }
